@@ -1,19 +1,24 @@
 import boto3
-import os
 
 s3 = boto3.client('s3')
 
-def lambda_handler(event, context):
+# Fixed destination bucket name
+DESTINATION_BUCKET = "outputbucket123450"
+
+def handler(event, context):
     print("Event:", event)
+
+    # Extract source info from the event
     source_bucket = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
 
-    # Copy file to output bucket
-    destination_bucket = os.environ.get("OUTPUT_BUCKET", "my-output-bucket-123")
+    # Copy file from source to destination
     s3.copy_object(
-        Bucket=destination_bucket,
+        Bucket=DESTINATION_BUCKET,
         CopySource={'Bucket': source_bucket, 'Key': file_key},
         Key=file_key
     )
 
-    return {"status": "File processed", "file": file_key}
+    print(f"Copied {file_key} from {source_bucket} to {DESTINATION_BUCKET}")
+    return {"status": "success", "file": file_key}
+
