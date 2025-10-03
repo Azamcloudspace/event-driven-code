@@ -1,7 +1,7 @@
 import boto3
 import json
 
-def lambda_handler(event, context):
+def handler(event, context):
     s3_record = event['Records'][0]['s3']
     bucket_name = s3_record['bucket']['name']
     file_key = s3_record['object']['key']
@@ -19,3 +19,4 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps('File processed successfully.')
     }
+
