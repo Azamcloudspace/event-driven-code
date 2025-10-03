@@ -1,24 +1,21 @@
 import boto3
+import json
 
-s3 = boto3.client('s3')
+def lambda_handler(event, context):
+    s3_record = event['Records'][0]['s3']
+    bucket_name = s3_record['bucket']['name']
+    file_key = s3_record['object']['key']
 
-# Fixed destination bucket name
-DESTINATION_BUCKET = "outputbucket123450"
+    print(f"Processing file: {file_key} from bucket: {bucket_name}")
 
-def handler(event, context):
-    print("Event:", event)
-
-    # Extract source info from the event
-    source_bucket = event['Records'][0]['s3']['bucket']['name']
-    file_key = event['Records'][0]['s3']['object']['key']
-
-    # Copy file from source to destination
-    s3.copy_object(
-        Bucket=DESTINATION_BUCKET,
-        CopySource={'Bucket': source_bucket, 'Key': file_key},
-        Key=file_key
+    sns = boto3.client('sns')
+    sns.publish(
+        TopicArn='arn:aws:sns:us-east-1:975050225555:FileProcessedTopic',
+        Subject='File Processed Successfully',
+        Message=f"File {file_key} has been processed successfully."
     )
 
-    print(f"Copied {file_key} from {source_bucket} to {DESTINATION_BUCKET}")
-    return {"status": "success", "file": file_key}
-
+    return {
+        'statusCode': 200,
+        'body': json.dumps('File processed successfully.')
+    }
